@@ -246,7 +246,6 @@ try:
             calculated_data_df=pd.DataFrame([calculated_data])
             with pd.ExcelWriter(f'{existing_excel_file_path}/{excel_name}', engine='xlsxwriter') as writer:
                 PECE_df_style=main_dataFrame_style(df=PECE_df)
-                calculated_data_df=calculated_data_df.styler.highlight_max(subset="high",color="lime")
                 PECE_df_style.to_excel(writer, sheet_name= sheet_name, index=False)
                 calculated_data_df.to_excel(writer, sheet_name= calculated_sheet_name, index=False)
                 
@@ -257,15 +256,16 @@ try:
            calculated_data['qty_cs']=calculated_data['qty_cs']-first_row['qty_c']
            calculated_data['oi_ps']=calculated_data['oi_ps']-first_row['oi_p']
            calculated_data['qty_ps']=calculated_data['qty_ps']-first_row['qty_p']
-           calculated_data_df=pd.DataFrame([calculated_data])
+           calculated_data_df=pd.DataFrame([calculated_data]).reset_index(inplace=True, drop=True)
            calculated_data_df = pd.concat([calculated_data_df,existing_calculated_df])
-        #  print(calculated_data_df.head(0))
+        
         
            with pd.ExcelWriter(f'{existing_excel_file_path}/{excel_name}', engine='openpyxl', mode='a',if_sheet_exists='replace') as writer:
                 PECE_df_style=main_dataFrame_style(df=PECE_df)
-                # calculated_data_df_style=calculated_data_df.style.apply(highlight_max,subset=["high"],color="lime")
+                print(calculated_data_df.head(2))
+                calculated_data_df_style=cp_dataFrame_style(calculated_data_df)
                 PECE_df_style.to_excel(writer, sheet_name= sheet_name, index=False)
-                calculated_data_df.to_excel(writer, sheet_name= calculated_sheet_name, index=False)
+                calculated_data_df_style.to_excel(writer, sheet_name= calculated_sheet_name, index=False)
                
         print(f"option index ==> {key} data successfully dumped into excel")       
      

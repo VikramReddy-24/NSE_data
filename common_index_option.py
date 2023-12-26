@@ -28,32 +28,32 @@ def get_weekday(recived_date):
     return day_of_week[0:3]
 
 def main_dataFrame_style(df):
-    # style_df=df.style.set_properties(subset = ['STRIKE_PRICE'],
-    #                     **{"background-color": "#047E8E",  
+    style_df=df.style.set_properties(subset = ['STRIKE_PRICE'],
+                        **{"background-color": "#047E8E",  
                            
-    #                        "border" : "1px solid white"})  \
-    #                     .set_properties(subset = ['lastPrice'],
-    #                     **{"background-color": "#FFE177",  
+                           "border" : "1px solid white"})  \
+                        .set_properties(subset = ['lastPrice'],
+                        **{"background-color": "#FFE177",  
                            
-    #                        "border" : "1px solid white"}) \
-    #                     .set_properties(subset = ['dayHigh'],
-    #                     **{"background-color": "#A4C24F",  
+                           "border" : "1px solid white"}) \
+                        .set_properties(subset = ['dayHigh'],
+                        **{"background-color": "#A4C24F",  
                            
-    #                        "border" : "1px solid white"}) \
-    #                     .set_properties(subset = ['dayLow'],
-    #                     **{"background-color": "#DA7A3D",  
+                           "border" : "1px solid white"}) \
+                        .set_properties(subset = ['dayLow'],
+                        **{"background-color": "#DA7A3D",  
                            
-    #                        "border" : "1px solid white"}) \
+                           "border" : "1px solid white"}) \
                           
                         
-    return df
+    return style_df
 
 def cp_dataFrame_style(df):
     try:
         print(type(df))
         min_max_cols=["high","open","close","low"]
-        style_df=df.style.highlight_max(subset="high",color="Lime")\
-                        # .highlight_min(subset=min_max_cols,color="#ff3333")  
+        style_df=df.style.highlight_min(subset=min_max_cols,color="Lime")\
+                         .highlight_max(subset=min_max_cols,color="#ff3333")  
     except Exception as e:
         print(e)
         print("An Exception Occured")    
