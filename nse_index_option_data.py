@@ -12,6 +12,7 @@ import colorsys
 
 from botocore.exceptions import ClientError
 from openpyxl import load_workbook
+from common_index_option import get_weekday,main_dataFrame_style,cp_dataFrame_style
 # from common_functions import find_nearest_number, get_current_datetime_weekday,upload_excel_to_s3,read_s3_file_data
 
 def get_current_datetime_weekday():
@@ -32,22 +33,6 @@ def get_current_datetime_weekday():
 
     return formatted_date, formatted_time, day_of_week, f'{formatted_date}-{formatted_time}'
 
-def get_weekday(recived_date):
-    timestamp_str = recived_date
-
-    # Define the timezone
-    timezone_str = "Asia/Kolkata"
-
-    # Convert the timestamp string to a datetime object
-    timestamp_datetime = datetime.strptime(timestamp_str, "%d-%b-%Y %H:%M:%S")
-
-    # Set the timezone for the datetime object
-    timestamp_datetime = pytz.timezone(timezone_str).localize(timestamp_datetime)
-
-    # Get the day of the week (Monday is 0 and Sunday is 6)
-    day_of_week = timestamp_datetime.strftime("%A")
-
-    return day_of_week[0:3]
 
 def sheet_name_format(recived_data):
     # Define the timestamp in string format
@@ -71,54 +56,14 @@ def sheet_name_format(recived_data):
 
     return f'{date}{month}-{time[0:4]}'
 
-def gradient_color(val):
-    global selected
-
-    print(val)
-
-    if val<=selected:
-        brightness =  val/ selected
-    elif val>selected:
-        brightness =  selected/val 
-    brightness=int(str(brightness*100).split('.')[0])
-    # print(brightness)
-    # if brightness==0:
-    #     brightness=10
-    # elif brightness==100:
-    #     brightness=90  
-
-    # HSL values
-    h = 120  # Hue
-    s = 100  # Saturation
-    l = brightness   # Lightness
-
-    # Convert HSL to RGB
-    r, g, b = colorsys.hls_to_rgb(h / 360.0, l / 100.0, s / 100.0)
-
-    # Convert RGB to integer values (0-255)
-    r_int = int(r * 255)
-    g_int = int(g * 255)
-    b_int = int(b * 255)
-    
-
-    # Decrease brightness from top to bottom
-    color = f'RGB({r_int}, {g_int}, {b_int})'  # Using HSL color representation
-    print(f"background-color: {color}")
-    return f'background-color: {color}'
-
-def find_nearest_number(target, numbers):
-    nearest_number = min(numbers, key=lambda x: abs(x - target))
-    return nearest_number
-
-selected=0
 
 try:
 
     current_date = date.today()
     print("Current Date:", current_date)
 
-    cookie='_ga=GA1.1.1416523229.1701883786; _ga_PJSKY6CFJH=GS1.1.1701890785.2.1.1701890785.60.0.0; nseQuoteSymbols=[{"symbol":"WIPRO","identifier":null,"type":"equity"},{"symbol":"BANKNIFTY","identifier":"FUTIDXBANKNIFTY28-12-2023XX0.00","type":"equity"},{"symbol":"FINNIFTY","identifier":"FUTIDXFINNIFTY26-12-2023XX0.00","type":"equity"},{"symbol":"MIDCPNIFTY","identifier":"FUTIDXMIDCPNIFTY22-12-2023XX0.00","type":"equity"},{"symbol":"NIFTY","identifier":"FUTIDXNIFTY28-12-2023XX0.00","type":"equity"}]; defaultLang=en; _ga_QJZ4447QD3=GS1.1.1703498103.28.0.1703498103.0.0.0; nsit=XNZwzHe2BRoGTmdpF5Oqn1Vu; nseappid=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcGkubnNlIiwiYXVkIjoiYXBpLm5zZSIsImlhdCI6MTcwMzUxOTE5MiwiZXhwIjoxNzAzNTI2MzkyfQ.lCxTzupjKMPd0Eyxgq7gw2X5sruy9yfMKKMQlIJWM8Y; AKA_A2=A; bm_mi=518EF789C75E98EB343B972E398A6279~YAAQcDLUF5IxIXmMAQAAoAaooRZ74yEAAp+8bEpAjgFmpBzdnvY6ob7JJ2pz2bthgoSRUUxwnqXenbRFc/HpyWschOQEWF/ZnSWjs9En4o8nioZCdWBE3eMzuUNZs1zSvRBafsF9Dluxwutod8b7T/7ybU03B8sNrsha0TEJJIk+bHwRYuH5W6p76B+q8OIFGaYmzsYeF2vVrLpU9ZOu6bYxdHD7n6mKjCwp+k9L+sbVIA5x1bGpYK/Ooa/kYkchAusUlK7r+d50cnM47NdmEuDf/PbPyBEuTeSNPQUaFEM3fMGrDJCQqDBih3iAgGfJx7yBmecyXZZIFbZkdjs3kJDK4265FAjV8PT+tjPQ~1; RT="z=1&dm=nseindia.com&si=19ab3b89-93b4-417c-84c4-0b273bf7ad6f&ss=lqkwdhmo&sl=0&se=8c&tt=0&bcn=%2F%2F684d0d42.akstat.io%2F"; ak_bmsc=EF6159F952EE306F5228C4C1850FB1E7~000000000000000000000000000000~YAAQcDLUF6wxIXmMAQAAHgqooRabFl3hXG2CYfvE943VmxRz6Qk45Z9v6auTv3RCoAtpnyh0gkkQNch1xOjvdM1EJTfyzBhPpfBho7dL0Ubj6ByPCfSLpXx1vRxNOH750q7TcNOM9dwQ0LeuD6fbWeBZLT/vKoxdAJZf3MzOMme3vO72nDrLEI+OgnJln0SogGHV83V0mQqikTZ9go3UTVZhuLf4YjFWjPijgsEOeoRzqRN6ZTYIz7+41zER/fonwwypVII2von3LkUZQc5Pf6RN66TLbR2HWj19XsAJ0JiF5KaoT/Ry+GXKG7gR2Z4B61crPB7zNnxzGzL6I2iCgNqNy2HpIjUe3QyXPhWvpNiqPbHawk915malfAKf6gGm9uPQt0ILsY8tk5w7jrWhXGDSHHbbuy8ARG3ESSy/9fMwTUQoh4if6ctgf0AoO5Luk4fvsWf8kXIC4skWo/Od1bu8QG1JxXZpEo8EPR/FoYzwex2t0Qqm8poLBq8R2mpD5t79kkBVcmZeM43uXACoIURtFH8/nx1JgScBTHjHBRCJ15xyTB2TGl3lH7v/7ZLsel6httVCI+Pp3jY=; _ga_87M7PJ3R97=GS1.1.1703519192.61.1.1703519193.0.0.0; bm_sv=2A713EEB9664961624720D311B8B7EE0~YAAQcDLUF8UxIXmMAQAAOgyooRYLROAnAQ3AZxluULP0Wy8rhXCozdrss9DD7x2lIyZaGhbA6vfNKmNyqWrSpJENDxyfasSvKb7fgjjph07EPVS43jQwEjOhEF64i2wHx7AO7fxXj2EAA0WEdL8gJt38/cnKoaw96chVgIBuIx6MKrjRp6+HGq35h/+0wKkdp955KsdO0Q2S1eYntmGaBJ5XHMTma6caWXfrhN0cc8i3BOIpJiZHgVQkt3vNyMGgpTm5Vw==~1'
-    #####################################################
+    f = open("cookie.txt", "r")
+    cookie=f.read()
 
     header={
     'Accept':'application/json, text/javascript, */*; q=0.01',
@@ -146,16 +91,16 @@ try:
 
     
     for key in urls:
-        print("$"*100)
-        print(f"Fetching {key} data")
+        print(f"{'$'*20}Fetching {key} data {'$'*20}")
 
         nifty_url=nifty_urls[key]
         nifty_response=requests.get(url=nifty_url,headers=header)
-        print("Response===>",nifty_response)
-        # today_date=nifty_response.json()["timestamp"].split(" ")[0]
+        print("Response Status===>",nifty_response)
+        
         nifty_data=nifty_response.json()['data']
         timestamp=nifty_response.json()['timestamp']
         calculated_data={}
+
         calculated_data['Date']=f'{timestamp[0:6]}-{get_weekday(timestamp)}'
         calculated_data['ts']=str(timestamp).split(" ")[1][0:5]
     
@@ -262,93 +207,64 @@ try:
         calculated_data['chng_c']=PECE_df['CHNG_ce'].sum()
 
         calculated_data['oi_p']=PECE_df['OI_pe'].sum()
-        calculated_data['coi_p']=PECE_df['CHNG IN OI_pe'].sum()
         calculated_data['qty_p']=PECE_df['VOLUME_pe'].sum()
+        calculated_data['oi_ps']=PECE_df['OI_pe'].sum()
+        calculated_data['qty_ps']=PECE_df['VOLUME_pe'].sum()
+        calculated_data['coi_p']=PECE_df['CHNG IN OI_pe'].sum()
         calculated_data['iv_p']=PECE_df['LTP_pe'].sum()
         calculated_data['ltp_p']=PECE_df['LTP_pe'].sum()
         calculated_data['chng_c']=PECE_df['CHNG_ce'].sum()
         calculated_data['sy_ts']=get_current_datetime_weekday()[3]
         
-
-        
-
-        print("calculated_data==>",calculated_data)
-
-        
-        # print(calculated_data_df.head())
-        
-        # Define a color code (e.g., light green)
-        # color_code = '#5dd55d'
-
-        
-        # selected=find_nearest_number(underlaying_value,list(PECE_df['STRIKE_PRICE']))
-        # Apply color coding to a specific column (e.g., 'Age')
-        # PECE_df = PECE_df.style.applymap(lambda x:f'background-color: {color_code}', subset=['STRIKE_PRICE'])
-        # PECE_df.style.background_gradient(cmap='viridis',subset=['STRIKE_PRICE'])
-
-        PECE_df =PECE_df.style.set_properties(subset = ['STRIKE_PRICE'],
-                        **{"background-color": "#047E8E",  
-                           
-                           "border" : "1px solid white"})  \
-                        .set_properties(subset = ['lastPrice'],
-                        **{"background-color": "#FFE177",  
-                           
-                           "border" : "1px solid white"}) \
-                        .set_properties(subset = ['dayHigh'],
-                        **{"background-color": "#A4C24F",  
-                           
-                           "border" : "1px solid white"}) \
-                        .set_properties(subset = ['dayLow'],
-                        **{"background-color": "#DA7A3D",  
-                           
-                           "border" : "1px solid white"})    
-                        
-          
-        
-        existing_excel_file_path=f'{os.getcwd()}/index_option_data'
+        last_dir=os.getcwd().strip(os.getcwd().split("\\")[-1])
+        existing_excel_file_path=f'{last_dir}optionIndexData'
         excel_name=f'{key}.xlsx'
         sheet_name=f'{sheet_name_format(timestamp)}.xlsx'
         calculated_sheet_name = f'cp.xlsx'
-        print(sheet_name)
+
+        print("existing_excel_file_path==>",existing_excel_file_path)
+        print("excel_name==>",excel_name)
+        print("sheet_name==>",sheet_name)
+        print("calculated_sheet_name==>",calculated_sheet_name)
 
         # Create the folder if it doesn't exist
         if not os.path.exists(existing_excel_file_path):
             os.makedirs(existing_excel_file_path)
             print(f'Folder at {existing_excel_file_path} created successfully.')
             # Create an empty DataFrame (you can skip this step if you want an entirely empty Excel file)  
-
         else:
             print(f'Folder at {existing_excel_file_path} already exists.')    
     
         existing_calculated_df_status=0   
         try:
-            # Open the Excel workbook
             workbook=load_workbook(f'{existing_excel_file_path}/{excel_name}')
             existing_calculated_df_status=1
-            # worksheet_name = f'{key}.xlsx'
-            # Convert the worksheet to a Pandas DataFrame
-            # existing_calculated_df = pd.read_excel(f'{existing_excel_file_path}/{excel_name}', sheet_name=worksheet_name, header=None)
+
         except FileNotFoundError:
             print(f"FileNotFoundError in the Specified path Hence creating a new File {excel_name} and appending {sheet_name} and {key}.xlxs ")
             existing_calculated_df_status=0
             calculated_data_df=pd.DataFrame([calculated_data])
             with pd.ExcelWriter(f'{existing_excel_file_path}/{excel_name}', engine='xlsxwriter') as writer:
-                PECE_df.to_excel(writer, sheet_name= sheet_name, index=False)
+                PECE_df_style=main_dataFrame_style(df=PECE_df)
+                calculated_data_df=calculated_data_df.styler.highlight_max(subset="high",color="lime")
+                PECE_df_style.to_excel(writer, sheet_name= sheet_name, index=False)
                 calculated_data_df.to_excel(writer, sheet_name= calculated_sheet_name, index=False)
-            
+                
         if existing_calculated_df_status==1:
-        #    worksheet = workbook[calculated_sheet_name]
-           # Convert the worksheet to a Pandas DataFrame
            existing_calculated_df = pd.read_excel(f'{existing_excel_file_path}/{excel_name}', sheet_name=calculated_sheet_name)
-        #    print(existing_calculated_df.shape)
            first_row=existing_calculated_df.iloc[0].to_dict()
-           calculated_data['oi_cs']=calculated_data['oi_cs']-first_row['oi_cs']
-           calculated_data['qty_cs']=calculated_data['qty_cs']-first_row['qty_cs']
+           calculated_data['oi_cs']=calculated_data['oi_cs']-first_row['oi_c']
+           calculated_data['qty_cs']=calculated_data['qty_cs']-first_row['qty_c']
+           calculated_data['oi_ps']=calculated_data['oi_ps']-first_row['oi_p']
+           calculated_data['qty_ps']=calculated_data['qty_ps']-first_row['qty_p']
            calculated_data_df=pd.DataFrame([calculated_data])
            calculated_data_df = pd.concat([calculated_data_df,existing_calculated_df])
-        #    print(calculated_data_df.head(0))
+        #  print(calculated_data_df.head(0))
+        
            with pd.ExcelWriter(f'{existing_excel_file_path}/{excel_name}', engine='openpyxl', mode='a',if_sheet_exists='replace') as writer:
-                PECE_df.to_excel(writer, sheet_name= sheet_name, index=False)
+                PECE_df_style=main_dataFrame_style(df=PECE_df)
+                # calculated_data_df_style=calculated_data_df.style.apply(highlight_max,subset=["high"],color="lime")
+                PECE_df_style.to_excel(writer, sheet_name= sheet_name, index=False)
                 calculated_data_df.to_excel(writer, sheet_name= calculated_sheet_name, index=False)
                
         print(f"option index ==> {key} data successfully dumped into excel")       
