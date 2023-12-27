@@ -51,8 +51,9 @@ def main_dataFrame_style(df):
 def cp_dataFrame_style(df):
     try:
         print(type(df))
-        min_max_cols=["high","open","close","low"]
-        style_df=df.style.highlight_min(subset=min_max_cols,color="Lime")\
+        min_max_cols=["open","low","high","close"]
+        style_df=df.style\
+                         .highlight_min(subset=min_max_cols,color="Lime")\
                          .highlight_max(subset=min_max_cols,color="#ff3333")  
     except Exception as e:
         print(e)

@@ -256,8 +256,9 @@ try:
            calculated_data['qty_cs']=calculated_data['qty_cs']-first_row['qty_c']
            calculated_data['oi_ps']=calculated_data['oi_ps']-first_row['oi_p']
            calculated_data['qty_ps']=calculated_data['qty_ps']-first_row['qty_p']
-           calculated_data_df=pd.DataFrame([calculated_data]).reset_index(inplace=True, drop=True)
-           calculated_data_df = pd.concat([calculated_data_df,existing_calculated_df])
+           calculated_data_df=pd.DataFrame([calculated_data])
+           calculated_data_df = pd.concat([calculated_data_df,existing_calculated_df]).reset_index(drop=True)
+           
         
         
            with pd.ExcelWriter(f'{existing_excel_file_path}/{excel_name}', engine='openpyxl', mode='a',if_sheet_exists='replace') as writer:
