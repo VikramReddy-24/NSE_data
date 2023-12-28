@@ -85,8 +85,8 @@ try:
          "OPTIDXMIDCP":"https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20MIDCAP%20SELECT"
     }
    
-    send_whatsapp_message()
-    print("-------")
+    # send_whatsapp_message()
+    # print("-------")
     
     for key in urls:
         print(f"{'$'*20}Fetching {key} data {'$'*20}")
