@@ -8,11 +8,8 @@ from datetime import date
 from datetime import datetime
 import xlsxwriter
 import pytz
-import colorsys
-
-from botocore.exceptions import ClientError
 from openpyxl import load_workbook
-from common_index_option import get_weekday,main_dataFrame_style,cp_dataFrame_style
+from common_index_option import get_weekday,main_dataFrame_style,cp_dataFrame_style,send_whatsapp_message
 # from common_functions import find_nearest_number, get_current_datetime_weekday,upload_excel_to_s3,read_s3_file_data
 
 def get_current_datetime_weekday():
@@ -88,14 +85,27 @@ try:
          "OPTIDXMIDCP":"https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20MIDCAP%20SELECT"
     }
    
-
+    send_whatsapp_message()
+    print("-------")
     
     for key in urls:
         print(f"{'$'*20}Fetching {key} data {'$'*20}")
 
         nifty_url=nifty_urls[key]
-        nifty_response=requests.get(url=nifty_url,headers=header)
-        print("Response Status===>",nifty_response)
+        
+        
+        try:
+            nifty_response=requests.get(url=nifty_url,headers=header,timeout=30)
+            print(nifty_response.status_code)
+            print("Response Status===>",nifty_response)
+        except requests.exceptions.Timeout:
+            print('The request timed out, Please change the cookie')
+            exit()
+        
+        if  nifty_response.status_code != 200:
+            print("check the validity of url or cookie")
+            exit()
+
         
         nifty_data=nifty_response.json()['data']
         timestamp=nifty_response.json()['timestamp']
@@ -234,8 +244,10 @@ try:
             # Create an empty DataFrame (you can skip this step if you want an entirely empty Excel file)  
         else:
             print(f'Folder at {existing_excel_file_path} already exists.')    
-    
-        existing_calculated_df_status=0   
+        
+        
+        calculated_data_df=pd.DataFrame([calculated_data])
+        existing_calculated_df_status=0
         try:
             workbook=load_workbook(f'{existing_excel_file_path}/{excel_name}')
             existing_calculated_df_status=1
@@ -243,11 +255,10 @@ try:
         except FileNotFoundError:
             print(f"FileNotFoundError in the Specified path Hence creating a new File {excel_name} and appending {sheet_name} and {key}.xlxs ")
             existing_calculated_df_status=0
-            calculated_data_df=pd.DataFrame([calculated_data])
             with pd.ExcelWriter(f'{existing_excel_file_path}/{excel_name}', engine='xlsxwriter') as writer:
                 PECE_df_style=main_dataFrame_style(df=PECE_df)
                 PECE_df_style.to_excel(writer, sheet_name= sheet_name, index=False)
-                calculated_data_df.to_excel(writer, sheet_name= calculated_sheet_name, index=False)
+                calculated_data_df.to_excel(writer, sheet_name= calculated_sheet_name, index=False)  
                 
         if existing_calculated_df_status==1:
            existing_calculated_df = pd.read_excel(f'{existing_excel_file_path}/{excel_name}', sheet_name=calculated_sheet_name)
@@ -267,10 +278,18 @@ try:
                 calculated_data_df_style=cp_dataFrame_style(calculated_data_df)
                 PECE_df_style.to_excel(writer, sheet_name= sheet_name, index=False)
                 calculated_data_df_style.to_excel(writer, sheet_name= calculated_sheet_name, index=False)
+
                
-        print(f"option index ==> {key} data successfully dumped into excel")       
-     
-        
+        print(f"option index ==> {key} data successfully dumped into respective excel sheets")       
+
+    
+    with pd.ExcelWriter(f'{existing_excel_file_path}/{calculated_sheet_name}', engine='xlsxwriter') as writer:
+        for key in urls:
+            read_df_style=cp_dataFrame_style(pd.read_excel(f'{existing_excel_file_path}/{key}.xlsx', sheet_name=calculated_sheet_name))
+            read_df_style.to_excel(writer, sheet_name= f'{key}.xlsx', index=False)
+    
+    print(f"cp excel file is created and data is successfully dumped")
+
 except Exception as e:
     print(e)
     print("An Exception Occured")    

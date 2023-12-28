@@ -3,6 +3,7 @@ import xlsxwriter
 import pytz
 import traceback
 import pandas as pd
+import pywhatkit as kit
 
 
 
@@ -53,8 +54,8 @@ def cp_dataFrame_style(df):
         print(type(df))
         min_max_cols=["open","low","high","close"]
         style_df=df.style\
-                         .highlight_min(subset=min_max_cols,color="Lime")\
-                         .highlight_max(subset=min_max_cols,color="#ff3333")  
+                         .highlight_min(subset=min_max_cols,color="#ff3333")\
+                         .highlight_max(subset=min_max_cols,color="Lime")  
     except Exception as e:
         print(e)
         print("An Exception Occured")    
@@ -62,3 +63,8 @@ def cp_dataFrame_style(df):
      
                         
     return style_df
+
+def send_whatsapp_message():
+    phone_number='+919963435360'
+    message="Bro, Added the common file now you can pull the latest code"
+    kit.sendwhatmsg_instantly(phone_no=phone_number,message=message,tab_close=True)
