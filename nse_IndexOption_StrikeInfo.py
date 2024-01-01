@@ -1,7 +1,7 @@
 import requests
 import traceback
 import pandas as pd
-from common_indexOption_strikeInfo import find_nearest_number,date_time_format,get_weekday
+from common_indexOption_strikeInfo import find_nearest_number,date_time_format,get_weekday,main_dataFrame_style
 from datetime import datetime
 import pytz
 import os
@@ -267,7 +267,7 @@ try:
                }
                
                 CEPE_df=pd.DataFrame(CEPE_dic,index=[0])
-    
+                # print("keys=====>",CEPE_dic.keys())
                 sheet_name=f'{s}.xlsx'
                 
                 existing_workbook_status=0
@@ -278,8 +278,8 @@ try:
                     print(f"FileNotFoundError in the Specified path Hence creating a new workbook {excel_name}.xlxs ")
                     existing_workbook_status=0
                     with pd.ExcelWriter(f'{folder_path}/{excel_name}', engine='xlsxwriter') as writer:
-                         CEPE_df.to_excel(writer,sheet_name=sheet_name,index=False)
-                         
+                        CEPE_df_style=main_dataFrame_style(CEPE_df)
+                        CEPE_df_style.to_excel(writer,sheet_name=sheet_name,index=False)
                 
                 if existing_workbook_status==1:
                     with pd.ExcelWriter(f'{folder_path}/{excel_name}', engine='openpyxl', mode='a',if_sheet_exists='replace') as writer:
@@ -287,7 +287,9 @@ try:
                         if sheet_name in sheets:     
                               existing_CEPE_df=pd.read_excel(f'{folder_path}/{excel_name}',sheet_name=sheet_name)
                               CEPE_df=pd.concat([CEPE_df,existing_CEPE_df]).reset_index(drop=True)
-                        CEPE_df.to_excel(writer,sheet_name=sheet_name,index=False)
+                        
+                        CEPE_df_style=main_dataFrame_style(CEPE_df)
+                        CEPE_df_style.to_excel(writer,sheet_name=sheet_name,index=False)
                         
 
                 print(f"option index ==> {sheet_name} data successfully dumped into respective excel sheets{excel_name}")       
