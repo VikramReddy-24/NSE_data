@@ -20,7 +20,7 @@ def date_time_format(recived_data):
     date = timestamp_datetime.strftime("%d")
     month = timestamp_datetime.strftime("%m")
     year = timestamp_datetime.strftime("%Y")
-    time = timestamp_datetime.strftime("%H%M:%S")
+    time = timestamp_datetime.strftime("%H%M") #:%S")
 
     print(time)
 

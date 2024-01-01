@@ -9,8 +9,8 @@ from openpyxl import load_workbook
 
 
 
-nofLatestExpiryDates=3
-nofStrikes_toSelect=[5,3,2]
+nofLatestExpiryDates=1
+nofStrikes_toSelect=[1]
 
 if nofLatestExpiryDates != len(nofStrikes_toSelect):
     print("In valid no of expiry dates and No of Strikes Prices")
@@ -19,15 +19,18 @@ if nofLatestExpiryDates != len(nofStrikes_toSelect):
 
 derivative_urls={
     
-    "NIFTY":"https://www.nseindia.com/api/quote-derivative?symbol=NIFTY&identifier=OPTIDXNIFTY04-01-2024CE20500.00"
+    "NIFTY":"https://www.nseindia.com/api/quote-derivative?symbol=NIFTY&identifier=OPTIDXNIFTY04-01-2024CE20500.00",
+    "FINNIFTY":"https://www.nseindia.com/api/quote-derivative?symbol=FINNIFTY",
+    "MIDCPNIFTY":"https://www.nseindia.com/api/quote-derivative?symbol=MIDCPNIFTY",
+    "BANKNIFTY":"https://www.nseindia.com/api/quote-derivative?symbol=BANKNIFTY&identifier=OPTIDXBANKNIFTY03-01-2024CE45600.00",
     
 }
 
 equity_stock_urls={
-   "NIFTY":"https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%2050"
-   # "FINNIFTY":"",
-    # "MIDCPNIFTY":"",
-    # "BANKNIFTY":"",
+   "NIFTY":"https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%2050",
+   "FINNIFTY":"https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20FINANCIAL%20SERVICES",
+   "MIDCPNIFTY":"https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20MIDCAP%20SELECT",
+   "BANKNIFTY":"https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20BANK",
 
 }
 
@@ -160,7 +163,7 @@ try:
               
 
            for s in  selected_strikeList:
-                print("for strike===>",s)
+                print(f"for strike===> {s} and {key}")
                 CE_df=dummy_derivative_df[(dummy_derivative_df['strikePrice']==s) & (dummy_derivative_df['optionType']=="Call")]
                 PE_df=dummy_derivative_df[(dummy_derivative_df['strikePrice']==s) & (dummy_derivative_df['optionType']=="Put")]
                 CE_dic=CE_df.to_dict('index')
@@ -171,17 +174,22 @@ try:
                 # print("pe==>",PE_dic)
                 CEPE_dic={
                    
-                      "date":f'{derivative_tsList[0]}{derivative_tsList[1]}',
-                      "day":f'{derivative_weekday}',
+                      "date":f'{derivative_tsList[0]}/{derivative_tsList[1]}-{derivative_weekday}',
+                    #   "day":f'{derivative_weekday}',
                       "time":f'{derivative_tsList[-1]}',
 
-                      "high":selected_equity_stock_data["high"],
-                      "open":selected_equity_stock_data["open"],
-                      "low":selected_equity_stock_data["low"],
-                      "chg":selected_equity_stock_data["change"],
-                      "%chg":selected_equity_stock_data["%change"],
-                      
 
+                      "%chg":round(selected_equity_stock_data["%change"],2),
+                      "chg":selected_equity_stock_data["change"],
+                      "ltp":selected_equity_stock_data["lastPrice"],
+                      "high":selected_equity_stock_data["high"],
+                      "low":selected_equity_stock_data["low"],
+                      "hl":(selected_equity_stock_data["high"]-selected_equity_stock_data["low"]),
+                      "%hl":round((selected_equity_stock_data["high"]-selected_equity_stock_data["low"])*100 / selected_equity_stock_data["low"],2),
+                      "open":selected_equity_stock_data["open"],
+                      
+                      '%chg_ce':round(CE_dic.get('pChange',0),2),
+                      'chg_ce':CE_dic.get('change',0),
                       "open_ce":CE_dic.get('openPrice',0),
                       "high_ce": CE_dic.get('highPrice',0),
                       "low_ce":CE_dic.get('lowPrice',0),
@@ -189,58 +197,59 @@ try:
 
                       "strikeP":s,
 
-                      "open_pe":PE_dic.get('openPrice',0),
+                      "ltp_pe":PE_dic.get('closePrice',0),
                       "high_pe":PE_dic.get('highPrice',0),
                       "low_pe":PE_dic.get('lowPrice',0),
-                      "ltp_pe":PE_dic.get('closePrice',0),
+                      "open_pe":PE_dic.get('openPrice',0),
+                      '%chg_pe':round(PE_dic.get('pChange',0),2),
+                      'chg_pe':PE_dic.get('change',0), 
 
-                      'nOfContractsTraded_ce':CE_dic.get('numberOfContractsTraded',0),
-                      'totalTurnover_ce':CE_dic.get('totalTurnove',0), 
+                      'p_close_ce':CE_dic.get('prevClose',0),
+
+                      'qty_ce':CE_dic.get('numberOfContractsTraded',0),
+                      'tto_ce':CE_dic.get('totalTurnove',0), 
                       'tradedVolume_ce':CE_dic.get('tradedVolume',0),
                       'value_ce':CE_dic.get('value',0),
                       'vmap_ce':CE_dic.get('vmap',0),
                       'premiumTurnover_ce':CE_dic.get('premiumTurnover',0),
-                      'openInterest_ce':CE_dic.get('openInterest',0),
-                      'changeinOpenInterest_ce':CE_dic.get('changeinOpenInterest',0),
-                      'pchangeinOpenInterest_ce':CE_dic.get('pchangeinOpenInterest',0),
-                      'marketLot_ce':CE_dic.get('marketLot',0),
-                      'settlementPrice_ce':CE_dic.get('settlementPrice',0),
-                      'dailyvolatility_ce':CE_dic.get('dailyvolatility',0),
+                      'oi_ce':CE_dic.get('openInterest',0),
+                      'coi_ce':f"{CE_dic.get('changeinOpenInterest',0)}",
+                      '%coi_ce':f"{round(CE_dic.get('pchangeinOpenInterest',0),0)}%",
+                      'Lot_ce':CE_dic.get('marketLot',0),
+                      'sp_ce':CE_dic.get('settlementPrice',0),
+                      'dvol_ce':CE_dic.get('dailyvolatility',0),
                       'annualisedVolatility_ce':CE_dic.get('annualisedVolatility',0),
-                      'impliedVolatility_ce':CE_dic.get('impliedVolatility',0),
-                      'clientWisePositionLimits_ce':CE_dic.get('clientWisePositionLimits',0),
-                      'marketWidePositionLimits_ce':CE_dic.get('marketWidePositionLimits',0),
-                      "volumeFreezeQuantity":CE_dic.get("volumeFreezeQuantity_ce",0),
-                      "totalBuyQuantity":CE_dic.get("totalBuyQuantity",0),
-                      "totalSellQuantity":CE_dic.get("totalSellQuantity",0),
-                      "priceBestBuy":CE_dic.get("priceBestBuy",0),
-                      "priceBestSell":CE_dic.get("priceBestSell",0),
-                      "pricelastPrice":CE_dic.get("pricelastPrice",0),
-                      "carryBestBuy":CE_dic.get("carryBestBuy",0),
-                      "carryBestSell":CE_dic.get("carryBestSell",0),
-                      "carrylastPrice":CE_dic.get("carrylastPrice",0),
+                      'IV_ce':CE_dic.get('impliedVolatility',0),
+                      'CWPL_ce':CE_dic.get('clientWisePositionLimits',0),
+                      'MWPL_ce':CE_dic.get('marketWidePositionLimits',0),
+                      "volumeFreezeQuantity_ce":CE_dic.get("volumeFreezeQuantity_ce",0),
+                      "totalBuyQuantity_ce":CE_dic.get("totalBuyQuantity",0),
+                      "totalSellQuantity_ce":CE_dic.get("totalSellQuantity",0),
+                      "priceBestBuy_ce":CE_dic.get("priceBestBuy",0),
+                      "priceBestSell_ce":CE_dic.get("priceBestSell",0),
+                      "pricelastPrice_ce":CE_dic.get("pricelastPrice",0),
+                      "carryBestBuy_ce":CE_dic.get("carryBestBuy",0),
+                      "carryBestSell_ce":CE_dic.get("carryBestSell",0),
+                      "carrylastPrice_ce":CE_dic.get("carrylastPrice",0),
 
-                      "ltp":selected_equity_stock_data["lastPrice"],
-
-                      'prevClose_pe':PE_dic.get('prevClose',0),
-                      'change_pe':PE_dic.get('change',0), 
-                      'pChange_pe':PE_dic.get('pChange',0),
-                     'numberOfContractsTraded_pe':PE_dic.get('numberOfContractsTraded',0),
-                      'totalTurnover_pe':PE_dic.get('totalTurnove',0), 
+                      'p_close_pe':PE_dic.get('prevClose',0),
+                      
+                     'qty_pe':PE_dic.get('numberOfContractsTraded',0),
+                      'tto_pe':PE_dic.get('totalTurnove',0), 
                       'tradedVolume_pe':PE_dic.get('tradedVolume',0),
                       'value_pe':PE_dic.get('value',0),
                       'vmap_pe':PE_dic.get('vmap',0),
                       'premiumTurnover_pe':PE_dic.get('premiumTurnover',0),
-                      'openInterest_pe':PE_dic.get('openInterest',0),
-                      'changeinOpenInterest_pe':PE_dic.get('changeinOpenInterest',0),
-                      'pchangeinOpenInterest_pe':PE_dic.get('pchangeinOpenInterest',0),
-                      'marketLot_pe':PE_dic.get('marketLot',0),
-                      'settlementPrice_pe':PE_dic.get('settlementPrice',0),
-                      'dailyvolatility_pe':PE_dic.get('dailyvolatility',0),
+                      'oi_pe':PE_dic.get('openInterest',0),
+                      'coi_pe':PE_dic.get('changeinOpenInterest',0),
+                      '%coi_pe':f"{round(PE_dic.get('pchangeinOpenInterest',0),0)}%",
+                      'Lot_pe':PE_dic.get('marketLot',0),
+                      'sp_pe':PE_dic.get('settlementPrice',0),
+                      'dvolt_pe':PE_dic.get('dailyvolatility',0),
                       'annualisedVolatility_pe':PE_dic.get('annualisedVolatility',0),
-                      'impliedVolatility_pe':PE_dic.get('impliedVolatility',0),
-                      'clientWisePositionLimits_pe':PE_dic.get('clientWisePositionLimits',0),
-                      'marketWidePositionLimits_pe':PE_dic.get('marketWidePositionLimits',0),
+                      'IV_pe':PE_dic.get('impliedVolatility',0),
+                      'CWPL_pe':PE_dic.get('clientWisePositionLimits',0),
+                      'MWPL_pe':PE_dic.get('marketWidePositionLimits',0),
                       "volumeFreezeQuantity_pe":PE_dic.get("volumeFreezeQuantity",0),
                       "totalBuyQuantity_pe":PE_dic.get("totalBuyQuantity",0),
                       "totalSellQuantity_pe":PE_dic.get("totalSellQuantity",0),
@@ -282,7 +291,7 @@ try:
                         
 
                 print(f"option index ==> {sheet_name} data successfully dumped into respective excel sheets{excel_name}")       
-
+        print(f"{key} completed {'$'*100}")
 
 except Exception as e:
     print(e)
