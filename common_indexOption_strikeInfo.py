@@ -51,6 +51,7 @@ def find_nearest_number(target, numbers):
 ce_list=['%chg_ce','chg_ce','open_ce',
             'high_ce',
             'low_ce',
+            'close_ce',
             'ltp_ce',
             'p_close_ce',
             'qty_ce',
@@ -77,6 +78,7 @@ ce_list=['%chg_ce','chg_ce','open_ce',
             'pricelastPrice_ce','carryBestBuy_ce','carryBestSell_ce','carrylastPrice_ce']
 
 pe_list=[   'ltp_pe',
+            'close_pe',
             'high_pe',
             'low_pe',
             'open_pe',

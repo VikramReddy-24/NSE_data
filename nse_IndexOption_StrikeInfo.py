@@ -193,11 +193,13 @@ try:
                       "open_ce":CE_dic.get('openPrice',0),
                       "high_ce": CE_dic.get('highPrice',0),
                       "low_ce":CE_dic.get('lowPrice',0),
-                      "ltp_ce":CE_dic.get('closePrice',0),
+                      "close_ce":CE_dic.get('closePrice',0),
+                      "ltp_ce":CE_dic.get('lastPrice',0),
 
                       "strikeP":s,
 
-                      "ltp_pe":PE_dic.get('closePrice',0),
+                      "ltp_pe":PE_dic.get('lastPrice',0),
+                      "close_pe":PE_dic.get('closePrice',0),
                       "high_pe":PE_dic.get('highPrice',0),
                       "low_pe":PE_dic.get('lowPrice',0),
                       "open_pe":PE_dic.get('openPrice',0),
@@ -288,6 +290,7 @@ try:
                               existing_CEPE_df=pd.read_excel(f'{folder_path}/{excel_name}',sheet_name=sheet_name)
                               CEPE_df=pd.concat([CEPE_df,existing_CEPE_df]).reset_index(drop=True)
                         
+                        # print(CEPE_df.columns)
                         CEPE_df_style=main_dataFrame_style(CEPE_df)
                         CEPE_df_style.to_excel(writer,sheet_name=sheet_name,index=False)
                         
